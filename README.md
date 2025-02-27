@@ -1,0 +1,2 @@
+# SLATE
+Simple operating system
