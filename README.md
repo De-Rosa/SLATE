@@ -1,13 +1,12 @@
 # SLATE
-Simple operating system, currently directly copied from [Meaty Skeleton](https://wiki.osdev.org/Meaty_Skeleton). 
-Subject to change.
-The following instructions on setting up SLATE are from the [OSDev Wiki](https://wiki.osdev.org) and are targetted towards Linux/GNU systems.
+Simple operating system, currently directly copied from [Meaty Skeleton](https://wiki.osdev.org/Meaty_Skeleton).\
+Subject to change.\
+The following instructions on setting up SLATE are from the [OSDev Wiki](https://wiki.osdev.org) and are targetted towards Linux/GNU systems.\
 Instructions for Windows/MacOS systems can be found on the wiki.
 
-
 ## Prerequisites
-An i686-elf toolchain (the GCC cross-compiler) is required to build the SLATE ISO file. Instructions on how to create this toolchain is detailed in a later section.
-GRUB is required for runtime files and commands used for building. GRUB should be installed for Linux, but can otherwise be found online. 
+An i686-elf toolchain (the GCC cross-compiler) is required to build the SLATE ISO file. Instructions on how to create this toolchain is detailed in a later section.\
+GRUB is required for runtime files and commands used for building. GRUB should be installed for Linux, but can otherwise be found online. \
 Other dependencies required:
 
 | Dependency                     | Debian Command |
@@ -23,31 +22,31 @@ Other dependencies required:
 ./iso.sh 
 ./qemu.sh
 ```
-You may need to make the shell scripts executable. On unix-like operating systems:
+You may need to make the shell scripts executable. On unix-like operating systems:\
 `chmod +x build.sh clean.sh config.sh default-host.sh headers.sh iso.sh qemu.sh target-triplet-to-arch.sh`
 
 ## Creating the GCC Cross-Compiler
-*A script file (or another solution) should eventually be made to automate this process.*
-
-The dependencies for building the cross compiler can be found [here](https://wiki.osdev.org/GCC_Cross-Compiler#Installing_Dependencies).
-For Debian-based systems (Ubuntu, Mint, etc.):
-`sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev`
-
-You need to download the [latest release](https://ftp.gnu.org/gnu/binutils/?C=M;O=D) of Binutils (with-gold is fine) and the [latest release](https://ftp.gnu.org/gnu/gcc/?C=N;O=D) of GCC.
-Further instructions can be found [here](https://wiki.osdev.org/GCC_Cross-Compiler#macOS_Users) for MacOS or Windows users.
-
+*A script file (or another solution) should eventually be made to automate this process.*\
+\
+The dependencies for building the cross compiler can be found [here](https://wiki.osdev.org/GCC_Cross-Compiler#Installing_Dependencies).\
+For Debian-based systems (Ubuntu, Mint, etc.):\
+`sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev`\
+\
+You need to download the [latest release](https://ftp.gnu.org/gnu/binutils/?C=M;O=D) of Binutils (with-gold is fine) and the [latest release](https://ftp.gnu.org/gnu/gcc/?C=N;O=D) of GCC.\
+Further instructions can be found [here](https://wiki.osdev.org/GCC_Cross-Compiler#macOS_Users) for MacOS or Windows users.\
+\
 It is recommended to extract the source files into `$HOME/opt/cross` (which will install it locally).
 ```
 export PREFIX="$HOME/opt/cross"
 export TARGET=i686-elf
 export PATH="$PREFIX/bin:$PATH"
 
-export BINUTILS_VER="[with-gold-]x.y.z"
+export BINUTILS_VER="with-gold-x.y.z"
 export GCC_VER="x.y.z"
 ```
-These commands are temporary to the current shell session and are used for building.
-For Binutils and GCC, replace the x.y.z with the version you downloaded (omitting or including with-gold-, excluding the brackets).
-
+These commands are temporary to the current shell session and are used for building.\
+For Binutils and GCC, replace the x.y.z with the version you downloaded (omitting 'with-gold-' if necessary).\
+\
 To compile Binutils:
 ```
 cd $HOME/src 
@@ -58,8 +57,9 @@ make
 make install
 ```
 
-To build GCC:
-We can verify that the `$PREFIX/bin` directory is in the PATH using `which -- $TARGET-as || echo $TARGET-as is not in the PATH`.
+To build GCC:\
+We can verify that the `$PREFIX/bin` directory is in the PATH using\
+`which -- $TARGET-as || echo $TARGET-as is not in the PATH`.
 
 ```
 cd $HOME/src 
@@ -78,7 +78,7 @@ We can then add our new compiler to PATH:
 ```
 export PATH="$HOME/opt/cross/bin:$PATH"
 ```
-This will only work for the current shell session, and therefore if wanted to use permanently must be added to your shell configuration script (e.g. `.zshrc` for zsh).
+This will only work for the current shell session, and therefore if wanted to use permanently must be added to your shell configuration script (e.g. `.zshrc` for zsh).\
 Furthermore, we can keep `$TARGET` by also adding
 ```
 export TARGET=i686-elf
