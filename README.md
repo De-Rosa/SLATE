@@ -35,7 +35,7 @@ For Debian-based systems (Ubuntu, Mint, etc.):\
 You need to download the [latest release](https://ftp.gnu.org/gnu/binutils/?C=M;O=D) of Binutils (with-gold is fine) and the [latest release](https://ftp.gnu.org/gnu/gcc/?C=N;O=D) of GCC.\
 Further instructions can be found [here](https://wiki.osdev.org/GCC_Cross-Compiler#macOS_Users) for MacOS or Windows users.\
 \
-It is recommended to extract the source files into `$HOME/opt/cross` (which will install it locally).
+It is recommended to extract the source files into `$HOME/src` which will be built into `$HOME/opt/cross`.
 ```
 export PREFIX="$HOME/opt/cross"
 export TARGET=i686-elf
