@@ -30,15 +30,22 @@ RUN wget -qO- https://ftp.gnu.org/gnu/binutils/binutils-with-gold-2.44.tar.gz | 
 
 WORKDIR ./build-binutils
 RUN ../binutils-$BINUTILS_VER/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot &&\ 
-make && make install
+make -j$(nproc) && make install
+
 
 WORKDIR /home/ubuntu/src
 RUN mkdir build-gcc
 
 WORKDIR ./build-gcc
-RUN ../gcc-$GCC_VER/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers --disable-hosted-libstdcxx && make all-gcc && make all-target-libgcc &&\ 
-make all-target-libstdc++-v3 &&\ make install-gcc &&\ 
-make install-target-libgcc && make install-target-libstdc++-v3
+
+RUN ../gcc-$GCC_VER/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers --disable-hosted-libstdcxx &&\ 
+make -j$(nproc) all-gcc &&\ 
+make -j$(nproc) all-target-libgcc &&\ 
+make -j$(nproc) all-target-libstdc++-v3 &&\ 
+make install-gcc &&\ 
+make install-target-libgcc &&\ 
+make install-target-libstdc++-v3
+
 
 # STAGE 2: 
 # Image used for compiling the OS.
