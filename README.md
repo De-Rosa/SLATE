@@ -1,10 +1,29 @@
 # SLATE
 Simple operating system, currently directly copied from [Meaty Skeleton](https://wiki.osdev.org/Meaty_Skeleton).\
-Subject to change.\
-The following instructions on setting up SLATE are from the [OSDev Wiki](https://wiki.osdev.org) and are targetted towards Linux/GNU systems.\
-Instructions for Windows/MacOS systems can be found on the wiki.
+Subject to change.
 
-## Prerequisites
+## Compiling using Docker (Recommended)
+
+
+| Dependency                     | Debian Command |
+| ---------- | ------------------------------ |
+| Docker              | *can be found on Docker website*                                   |
+| Make              | `sudo apt install make`                                   |
+| Qemu                 | `sudo apt install qemu-system`                               |
+
+The i686-elf toolchain can be created using Docker, where it can then be ran to output an ISO file.\
+In order to build the image:
+```
+make build
+```
+In order to compile SLATE into an ISO:
+```
+make run
+```
+
+
+## Prerequisites (Manual)
+
 An i686-elf toolchain (the GCC cross-compiler) is required to build the SLATE ISO file. Instructions on how to create this toolchain is detailed in a later section.\
 GRUB is required for runtime files and commands used for building. GRUB should be installed for Linux, but can otherwise be found online. \
 Other dependencies required:
@@ -15,19 +34,9 @@ Other dependencies required:
 | Qemu                 | `sudo apt install qemu-system`                               |
 
 
-## Building and Running
-```
-./clean.sh 
-./headers.sh 
-./iso.sh 
-./qemu.sh
-```
-You may need to make the shell scripts executable. On unix-like operating systems:\
-`chmod +x build.sh clean.sh config.sh default-host.sh headers.sh iso.sh qemu.sh target-triplet-to-arch.sh`
 
-## Creating the GCC Cross-Compiler
-*A script file (or another solution) should eventually be made to automate this process.*\
-\
+
+## Creating the GCC Cross-Compiler (Manual)
 The dependencies for building the cross compiler can be found [here](https://wiki.osdev.org/GCC_Cross-Compiler#Installing_Dependencies).\
 For Debian-based systems (Ubuntu, Mint, etc.):\
 `sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libisl-dev`\
@@ -85,6 +94,16 @@ export TARGET=i686-elf
 ```
 
 Our compiler can now be ran by invoking `$TARGET-gcc`!
+
+## Building and Running (Manual)
+```
+./clean.sh 
+./headers.sh 
+./iso.sh 
+./qemu.sh
+```
+You may need to make the shell scripts executable. On unix-like operating systems:\
+`chmod +x build.sh clean.sh config.sh default-host.sh headers.sh iso.sh qemu.sh target-triplet-to-arch.sh`
 
 ## Sources Used
 https://wiki.osdev.org
