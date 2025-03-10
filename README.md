@@ -20,6 +20,11 @@ In order to compile SLATE into an ISO:
 ```
 make run
 ```
+SLATE can then be ran using QEMU by using the respective `qemu-system-` command.\
+For example, for AMD64 systems:
+```
+qemu-system-amd64 -cdrom slate.iso
+```
 
 
 ## Prerequisites (Manual)

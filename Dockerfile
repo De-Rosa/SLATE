@@ -59,7 +59,8 @@ RUN apt update && apt install -y \
     build-essential \
     make \
     gcc \
-    xorriso
+    xorriso \
+    grub-pc-bin
 
 # Copy the toolchain from the build stage
 COPY --from=build-env /home/ubuntu/opt/cross /home/ubuntu/opt/cross
