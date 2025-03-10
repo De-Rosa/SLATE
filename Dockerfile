@@ -60,7 +60,8 @@ RUN apt update && apt install -y \
     make \
     gcc \
     xorriso \
-    grub-pc-bin
+    grub-pc-bin \
+    dos2unix
 
 # Copy the toolchain from the build stage
 COPY --from=build-env /home/ubuntu/opt/cross /home/ubuntu/opt/cross

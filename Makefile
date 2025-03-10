@@ -10,5 +10,6 @@ build:
 		--build-arg BUILDKIT_INLINE_CACHE=1 \
 		--target final-image \
 		--load .
+
 run:
-	$(DOCKER) run --rm -v $(DIR):/build -w /build --platform linux/amd64 $(IMAGE_NAME) /bin/bash -c "./clean.sh && ./headers.sh && ./iso.sh"
+	MSYS_NO_PATHCONV=1 $(DOCKER) run --rm -v $(DIR):/build -w /build --platform linux/amd64 $(IMAGE_NAME) /bin/bash -c "dos2unix *.sh && ./clean.sh && ./headers.sh && ./iso.sh"
