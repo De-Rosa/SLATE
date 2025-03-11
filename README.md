@@ -4,12 +4,11 @@ Subject to change.
 
 ## Compiling using Docker (Recommended)
 
-
-| Dependency                     | Debian Command |
-| ---------- | ------------------------------ |
-| Docker              | *can be found on Docker website*                                   |
-| Make              | `sudo apt install make`                                   |
-| Qemu                 | `sudo apt install qemu-system`                               |
+| Dependency                                                                       | Debian                                                                         | MacOS                                                                                | Windows |
+| ---------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Docker               | [Docker for Debian](https://docs.docker.com/desktop/setup/install/linux/debian/)                                                                                 | [Docker for MacOS](https://docs.docker.com/desktop/setup/install/mac-install/)                                                                               | [Docker for Windows](https://docs.docker.com/desktop/setup/install/windows-install/)                                                                                     |
+| Make                 | `sudo apt install make`                                                                                                                                          | `xcode-select --install`                                                                                                                                     | Using [Chocolatey](https://chocolatey.org/install):<br>`choco install make`                                                                                              |
+| Qemu                 | `sudo apt install qemu-system`                                                                                                                                   | Using [Homebrew](https://brew.sh/):<br>`brew install qemu`                                                                                                   | Using [MSYS2 UCRT64](https://www.msys2.org/):<br>`pacman -S mingw-w64-ucrt-x86_64-qemu`                                                                                     |
 
 The i686-elf toolchain can be created using Docker, where it can then be ran to output an ISO file.\
 In order to build the image:
@@ -21,9 +20,9 @@ In order to compile SLATE into an ISO:
 make run
 ```
 SLATE can then be ran using QEMU by using the respective `qemu-system-` command.\
-For example, for AMD64 systems:
+For example, for x86_64 systems:
 ```
-qemu-system-amd64 -cdrom slate.iso
+qemu-system-x86_64 -cdrom slate.iso
 ```
 
 
