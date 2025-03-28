@@ -1,15 +1,19 @@
 // https://wiki.osdev.org/GDT_Tutorial
 // https://wiki.osdev.org/Global_Descriptor_Table 
 #include <stdint.h> 
-#include <sys/types.h>
 
-// Each entry in the GDT is 8 bytes long.
+#include <kernel/gdt.h>
+
+extern void setGDT(uint16_t limit, uint32_t base);
+extern void reloadSegments(void);
+
+// Each descriptor in the GDT is 8 bytes long.
 struct gdt_entry { 
 	// Base states linear address where segment begins.
-	unsigned char base; // 32 bit
+	uint32_t base; 
 	
 	// Limit states the maximum addressable unit for this segment.
-	unsigned int limit; // 20 bit
+	uint16_t limit; 
 	
 	// Access byte (8 bits) in format 76543210
 	// 7: PRESENT BIT (P), refers to a valid segment (must be set to 1 for any valid segment)
@@ -39,15 +43,15 @@ struct gdt_entry {
 	//		- 0x2: Local Descriptor Table (LDT)
 	//		- 0x9: 64-bit Task State Segment (TSS) (available)
 	//		- 0xB: 64-bit Task State Segment (TSS) (busy)
-	unsigned char access_byte; // 8 bit
+	uint8_t access_byte; // 8 bit
 
 	// Flags (4 bits) in format 3210
 	// 3: GRANULARITY FLAG (G), indicates that the limit is in 4 KiB blocks (page granularity) if false otherwise in 1 byte blocks (byte granularity)
 	// 2: SIZE FLAG (DB), defines a 16-bit protected mode segment if false otherwise defines a 32-bit protected mode segment.
 	// 1: LONG-MODE CODE FLAG (L), should always be clear otherwise defines a 64-bit code segment if set. 
 	// 0: RESERVED
-	unsigned char flags; // 4 bit
-};
+	uint8_t flags; // 4 bit
+}__attribute__((packed));
 
 // https://wiki.osdev.org/GDT_Tutorial#Filling_the_Table
 // *target refers to the logical address of the Segment Descriptor.
@@ -75,7 +79,7 @@ void encode_gdt_entry(uint8_t *target, struct gdt_entry source) {
     target[6] |= (source.flags << 4); // bitwise OR
 }
 
-int main(void) {
+void encode_segments(uint8_t *entries) {
 	// Long mode setup 
 	
 	// Templates for each segment descriptor
@@ -87,16 +91,31 @@ int main(void) {
 		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0xF2, .flags = 0xC } // User Mode Data Segment
 	};
 
-	// The offsets for each segment entry in the GDT.
-	u_int8_t segment_entries[5] = {
-		0x0000, // Null Descriptor
-		0x0008,	// Kernel Mode Code Segment
-		0x0010, // Kernel Mode Data Segment
-		0x0018, // User Mode Code Segment
-		0x0020 // User Mode Data Segment
-	};
-	
 	for (int i = 0; i < 5; i++) {
-		encode_gdt_entry(&segment_entries[i], segment_templates[i]);
+		encode_gdt_entry(&entries[i * 8], segment_templates[i]);
 	}
+}
+
+// https://old.reddit.com/r/osdev/comments/19d2it5/loading_the_gdt_using_inline_assembly_some_issues/
+struct gdt_pointer {
+    uint16_t limit;
+    uint32_t base;
+} __attribute__((packed));
+
+void load_gtdr(struct gdt_pointer gdt_p) {
+    asm volatile( "lgdtl %0" :: "m"(gdt_p) );
+}
+
+void setup_gdt(void) {
+	uint8_t gdt[8 * 5]; 
+
+	encode_segments(gdt);
+
+	struct gdt_pointer gdt_pointer;
+
+	gdt_pointer.limit = (sizeof(gdt) - 1);
+	gdt_pointer.base = (uint32_t) &gdt;
+	
+	load_gtdr(gdt_pointer);
+	reloadSegments();
 }
