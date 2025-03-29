@@ -1,6 +1,5 @@
 # SLATE
-Simple operating system, currently directly copied from [Meaty Skeleton](https://wiki.osdev.org/Meaty_Skeleton).\
-Subject to change.
+Simple operating system.
 
 ## Compiling using Docker (Recommended)
 

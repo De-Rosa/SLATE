@@ -4,7 +4,7 @@
 #include <kernel/gdt.h>
 
 void kernel_main(void) {
-	setup_gdt();
 	terminal_initialize();
+	setup_gdt();
 	printf("Welcome to SLATE!\n");
 }

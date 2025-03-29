@@ -1,19 +1,16 @@
 // https://wiki.osdev.org/GDT_Tutorial
 // https://wiki.osdev.org/Global_Descriptor_Table 
 #include <stdint.h> 
+#include <stdio.h>
 
 #include <kernel/gdt.h>
 
-extern void setGDT(uint16_t limit, uint32_t base);
-extern void reloadSegments(void);
-
-// Each descriptor in the GDT is 8 bytes long.
 struct gdt_entry { 
 	// Base states linear address where segment begins.
 	uint32_t base; 
 	
 	// Limit states the maximum addressable unit for this segment.
-	uint16_t limit; 
+	uint32_t limit; 
 	
 	// Access byte (8 bits) in format 76543210
 	// 7: PRESENT BIT (P), refers to a valid segment (must be set to 1 for any valid segment)
@@ -62,26 +59,28 @@ void encode_gdt_entry(uint8_t *target, struct gdt_entry source) {
 	}
 
     // Encoding the limit.
-    target[0] = source.limit & 0xFF;
-    target[1] = (source.limit >> 8) & 0xFF;
-    target[6] = (source.limit >> 16) & 0x0F;
+    // Limit should be the first 16 bits of the entry, then the next 4 after the access byte.
+    target[0] = source.limit & 0xFF; // first 8 bits of the limit
+    target[1] = (source.limit >> 8) & 0xFF; // next 8 bits of the limit
+    target[6] = (source.limit >> 16) & 0x0F; // last 4 bits
 
     // Encoding the base.
-    target[2] = source.base & 0xFF;
-    target[3] = (source.base >> 8) & 0xFF;
-    target[4] = (source.base >> 16) & 0xFF;
-    target[7] = (source.base >> 24) & 0xFF;
+    // Base should be next 24 bits after limit then last 8 bits of entry.
+    target[2] = source.base & 0xFF; // first 8 bits of the base
+    target[3] = (source.base >> 8) & 0xFF; // next 8 bits of the base
+    target[4] = (source.base >> 16) & 0xFF; // next 8 bits of the base
+    target[7] = (source.base >> 24) & 0xFF; // last 8 bits
 
     // Encoding the access byte.
-    target[5] = source.access_byte;
+    // Access byte should be next 8 bits after 24 bits of base.
+    target[5] = source.access_byte; // all 8 bits
 
     // Encoding the flags.
-    target[6] |= (source.flags << 4); // bitwise OR
+    // Flags should be next 4 bits after 4 bits of limit.
+    target[6] |= (source.flags << 4); // set all 4 bits using OR
 }
 
 void encode_segments(uint8_t *entries) {
-	// Long mode setup 
-	
 	// Templates for each segment descriptor
 	struct gdt_entry segment_templates[5] = {
 		{ .base = 0, .limit = 0x00000000, .access_byte = 0x00, .flags = 0x0 }, // Null Descriptor
@@ -92,30 +91,22 @@ void encode_segments(uint8_t *entries) {
 	};
 
 	for (int i = 0; i < 5; i++) {
+		// each item in the array is one byte, each segment has offset of 8 bytes
 		encode_gdt_entry(&entries[i * 8], segment_templates[i]);
 	}
 }
 
-// https://old.reddit.com/r/osdev/comments/19d2it5/loading_the_gdt_using_inline_assembly_some_issues/
-struct gdt_pointer {
-    uint16_t limit;
-    uint32_t base;
-} __attribute__((packed));
-
-void load_gtdr(struct gdt_pointer gdt_p) {
-    asm volatile( "lgdtl %0" :: "m"(gdt_p) );
-}
+uint8_t gdt[8 * 5]; 
+extern void setGDT(uint16_t limit, uint32_t base);
+extern void reloadSegments(void);
 
 void setup_gdt(void) {
-	uint8_t gdt[8 * 5]; 
-
 	encode_segments(gdt);
 
-	struct gdt_pointer gdt_pointer;
+	uint16_t limit = (sizeof(gdt) - 1);
+	uint32_t base = (uint32_t) (uintptr_t) &gdt;
 
-	gdt_pointer.limit = (sizeof(gdt) - 1);
-	gdt_pointer.base = (uint32_t) &gdt;
-	
-	load_gtdr(gdt_pointer);
+	setGDT(limit, base);
 	reloadSegments();
 }
+
