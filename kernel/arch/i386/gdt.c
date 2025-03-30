@@ -82,11 +82,12 @@ void encode_gdt_entry(uint8_t *target, struct gdt_entry source) {
 
 void encode_segments(uint8_t *entries) {
 	// Templates for each segment descriptor
+	// Changed flags for kernel & user code segments to use flag of 0xC instead of 0xA, otherwise triple faults.
 	struct gdt_entry segment_templates[5] = {
 		{ .base = 0, .limit = 0x00000000, .access_byte = 0x00, .flags = 0x0 }, // Null Descriptor
-		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0x9A, .flags = 0xA }, // Kernel Mode Code Segment
+		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0x9A, .flags = 0xC }, // Kernel Mode Code Segment
 		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0x92, .flags = 0xC }, // Kernel Mode Data Segment
-		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0xFA, .flags = 0xA }, // User Mode Code Segment
+		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0xFA, .flags = 0xC }, // User Mode Code Segment
 		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0xF2, .flags = 0xC } // User Mode Data Segment
 	};
 
@@ -104,7 +105,7 @@ void setup_gdt(void) {
 	encode_segments(gdt);
 
 	uint16_t limit = (sizeof(gdt) - 1);
-	uint32_t base = (uint32_t) (uintptr_t) &gdt;
+	uint32_t base = (uint32_t)&gdt;
 
 	setGDT(limit, base);
 	reloadSegments();
