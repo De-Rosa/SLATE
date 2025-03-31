@@ -7,9 +7,9 @@ gdtr:
 .section .text
 .global setGDT
 setGDT:
-   MOV   ax, [esp + 4] // get limit 16 bytes
+   MOV   ax, [esp + 4] // get limit 16 bits
    MOV   [gdtr], ax // put it in GDTR
-   MOV   eax, [esp + 8] // get base 32 bytes
+   MOV   eax, [esp + 8] // get base 32 bits
    MOV   [gdtr + 2], eax // put it in GDTR
    LGDT  [gdtr] // load the GDT
    RET

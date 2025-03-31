@@ -8,7 +8,6 @@ void kernel_main(void) {
 	terminal_initialize();
 
 	setup_gdt();
-	setup_idt();
 
 	printf("Welcome to SLATE!\n");
 }
