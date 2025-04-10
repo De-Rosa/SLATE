@@ -17,6 +17,22 @@ struct idt_entry {
 
 }__attribute__((packed));
 
+struct registers {
+	// pushed last seperately
+	unsigned int gs, fs, es, ds; 
+
+	// pushed by pusha
+	unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; 
+	
+	// pushed using 'push byte'
+	unsigned int isr_number, error_code;
+
+	// pushed automatically
+	unsigned int eip, cs, eflags, useresp, ss;
+
+}__attribute__((packed));
+
+
 void setup_idt(void);
 
 #endif

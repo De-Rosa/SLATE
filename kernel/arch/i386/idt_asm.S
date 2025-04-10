@@ -7,18 +7,18 @@ idtr:
 .section .text
 .global setIDT
 setIDT:
-   MOV   ax, [esp + 4] // get limit 16 bits
-   MOV   [idtr], ax // put it in IDTR
-   MOV   eax, [esp + 8] // get base 32 bits
-   MOV   [idtr + 2], eax // put it in IDTR
-   LIDT  [idtr] // load the GDT
-   STI
-   RET
+   mov   ax, [esp + 4] // get limit 16 bits
+   mov   [idtr], ax // put it in idtr
+   mov   eax, [esp + 8] // get base 32 bits
+   mov   [idtr + 2], eax // put it in idtr
+   lidt  [idtr] // load the gdt
+   sti
+   ret
 
 .global outb
 // https://c9x.me/x86/html/file_module_x86_id_222.html
 outb:
-   MOV AX, [ESP + 6]    // get port 16 bits
-   MOV AL, [ESP + 4]    // get operand 8 bits
-   OUT DX, AL
-   RET
+    mov dx, [esp + 4]   // load port into dx
+    mov al, [esp + 8]   // load operand into al
+    out dx, al
+    ret

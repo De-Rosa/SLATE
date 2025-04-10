@@ -36,7 +36,7 @@ void encode_gdt_entry(uint8_t *target, struct gdt_entry source) {
 
 void encode_segments(uint8_t *entries) {
 	// Templates for each segment descriptor
-	// Changed flags for kernel & user code segments to use flag of 0xC instead of 0xA, otherwise triple faults.
+	// 32 bit
 	struct gdt_entry segment_templates[5] = {
 		{ .base = 0, .limit = 0x00000000, .access_byte = 0x00, .flags = 0x0 }, // Null Descriptor
 		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0x9A, .flags = 0xC }, // Kernel Mode Code Segment
