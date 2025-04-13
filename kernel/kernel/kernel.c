@@ -4,6 +4,9 @@
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
 
+#include <kernel/memory/pmem.h>
+#include <kernel/memory/vmem.h>
+
 void kernel_main(void) {
 	terminal_initialize();
 
