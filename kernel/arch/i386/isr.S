@@ -12,8 +12,8 @@ isr_stub_\n:
 .macro isr_no_err_stub n
 .global isr_stub_\n
 isr_stub_\n:
-    pushl $0
     pushl $\n
+    pushl $0
     call isr_common_stub
     iret
 .endm

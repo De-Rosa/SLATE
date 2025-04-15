@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <kernel/idt.h>
+#include <kernel/tty.h>
 #include <string.h>
 
 #define PIC1	0x20
@@ -70,6 +71,8 @@ void encode_isrs(uint8_t* idt) {
 }
 
 void setup_idt(void) {
+	terminal_info("Initialising IDT...\n");
+
 	encode_isrs(idt);
 
 	uint16_t limit = (sizeof(idt) - 1);
@@ -102,12 +105,13 @@ const char* exception_descriptions[] = {
     "Machine Check Exception"
 };
 
+// Seems to be incorrect, isr number (which should be used) is jumbled.
+// Using error code for now.
 void exception_handler(struct registers* regs) {
-	// leaving out for now, seems to be an issue with registers and how it is created with the stack
-	//if (regs->isr_number >= 32) return;
-	//printf(exception_descriptions[regs->isr_number]);
-	
-	printf("Exception handler called!\n");
+	if (regs->error_code > 32) return;
+
+	terminal_error("Exception handler called!\n");
+	terminal_error(exception_descriptions[regs->error_code]);
 
 	__asm__ volatile ("cli; hlt"); // hang the system
 }

@@ -18,10 +18,10 @@ setGDT:
 reloadSegments:
    JMP   0x08:.reload_CS 
 .reload_CS:
-   MOV   AX, 0x10 
-   MOV   DS, AX
-   MOV   ES, AX
-   MOV   FS, AX
-   MOV   GS, AX
-   MOV   SS, AX
+   MOV   ax, 0x10 
+   MOV   ds, ax
+   MOV   es, ax
+   MOV   fs, ax
+   MOV   gs, ax
+   MOV   ss, ax
    RET

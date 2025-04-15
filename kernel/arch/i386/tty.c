@@ -65,3 +65,15 @@ void terminal_write(const char* data, size_t size) {
 void terminal_writestring(const char* data) {
 	terminal_write(data, strlen(data));
 }
+
+void terminal_info(const char* data) {
+	terminal_setcolor(VGA_COLOR_CYAN);
+	terminal_writestring(data);
+	terminal_setcolor(VGA_COLOR_LIGHT_GREY);
+}
+
+void terminal_error(const char* data) {
+	terminal_setcolor(VGA_COLOR_RED);
+	terminal_writestring(data);
+	terminal_setcolor(VGA_COLOR_LIGHT_GREY);
+}

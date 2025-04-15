@@ -17,9 +17,10 @@ struct idt_entry {
 
 }__attribute__((packed));
 
+// TODO: fix this
 struct registers {
 	// pushed last seperately
-	unsigned int gs, fs, es, ds; 
+	unsigned int ds, es, fs, gs; 
 
 	// pushed by pusha
 	unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; 
@@ -28,7 +29,7 @@ struct registers {
 	unsigned int isr_number, error_code;
 
 	// pushed automatically
-	unsigned int eip, cs, eflags, useresp, ss;
+	unsigned int eip, cs, eflags;
 
 }__attribute__((packed));
 
