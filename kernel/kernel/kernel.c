@@ -17,5 +17,8 @@ void kernel_main(void) {
 	// Occasionally causes a general fault protection exception?
 	initialise_controller();
 
+	// test interrupts!
+	volatile int z = 1 / 0;
+
 	printf("Welcome to SLATE!\n");
 }
