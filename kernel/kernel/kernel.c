@@ -17,4 +17,13 @@ void kernel_main(void) {
 
 	// test interrupts!
 	volatile int z = 1 / 0;
+
+	// This is all virtual for now.
+	
+	// init_heap(); 
+
+    // void* a = kmalloc(100);
+    // void* b = kmalloc(50);
+    // kfree(a);
+    // kfree(b);
 }
