@@ -102,12 +102,13 @@ const char* exception_descriptions[] = {
     "Machine Check Exception"
 };
 
+// Seems to be incorrect, isr number (which should be used) is jumbled.
+// Using error code for now.
 void exception_handler(struct registers* regs) {
-	// leaving out for now, seems to be an issue with registers and how it is created with the stack
-	//if (regs->isr_number >= 32) return;
-	//printf(exception_descriptions[regs->isr_number]);
-	
+	if (regs->error_code > 32) return;
+
 	printf("Exception handler called!\n");
+	printf(exception_descriptions[regs->error_code]);
 
 	__asm__ volatile ("cli; hlt"); // hang the system
 }

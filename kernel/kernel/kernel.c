@@ -3,6 +3,7 @@
 #include <kernel/tty.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
+#include <kernel/ps2.h>
 
 void kernel_main(void) {
 	terminal_initialize();
@@ -10,8 +11,8 @@ void kernel_main(void) {
 	setup_gdt();
 	setup_idt();
 
-	printf("Welcome to SLATE!\n");
+	// Causes a general fault protection exception
+	// initialise_controller();
 
-	// test interrupts!
-	volatile int z = 1 / 0;
+	printf("Welcome to SLATE!\n");
 }
