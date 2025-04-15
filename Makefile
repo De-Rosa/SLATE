@@ -6,7 +6,6 @@ build:
 	$(DOCKER) buildx create --use
 	$(DOCKER) buildx build --platform linux/amd64 \
 		-t $(IMAGE_NAME) \
-		--cache-from=type=registry,ref=$(IMAGE_NAME):latest \
 		--build-arg BUILDKIT_INLINE_CACHE=1 \
 		--target final-image \
 		--load .
