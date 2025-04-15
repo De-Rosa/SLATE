@@ -4,11 +4,13 @@
 #include <stdio.h> 
 
 #include <kernel/ps2.h>
+#include <kernel/tty.h>
 
-#define WAIT_TIME	100000
+// Too large of a wait time causes a general protection fault
+#define WAIT_TIME	10000
 
 // used to read data recieved from PS/2 device
-#define PS2_DATA_PORT	0x60 
+#define PS2_DATA_PORT	0x60
 
 // status register (read):
 // contains flags which show the state of the controller
@@ -31,8 +33,15 @@
 #define CONTROLLER_TEST_SUCCESS		0x55
 #define PORT_TEST_SUCCESS		0x00
 
+
 extern void outb(uint16_t port, uint8_t operand);
 extern uint8_t inb(uint16_t port);
+
+void wait(int count) {
+    for (int i = 0; i < count; i++) {
+        asm volatile("nop");
+    }
+}
 
 // returns 1 if clear, 0 if timed out
 int wait_input_buffer(void) {
@@ -40,6 +49,7 @@ int wait_input_buffer(void) {
 		uint8_t status = inb(PS2_REGISTER);
 		if ((status & 0b10) == 0) return 1; // input buffer status is clear
 	}
+	printf("(wait_input_buffer) timed out...\n");
 	return 0; // timed out!
 }
 
@@ -49,13 +59,15 @@ int wait_output_buffer(void) {
 		uint8_t status = inb(PS2_REGISTER);
 		if (status & 1) return 1; // output buffer status is set
 	}
+	printf("(wait_output_buffer) timed out...\n");
 	return 0; // timed out!
 }
 
 // returns 0xFF on failure
 uint8_t read_response(void) {
 	if (!wait_output_buffer()) return 0xFF;
-	return inb(PS2_DATA_PORT);
+	uint8_t result = inb(PS2_DATA_PORT);
+	return result;
 }
 
 void write_to_controller(uint16_t command) {
@@ -63,13 +75,13 @@ void write_to_controller(uint16_t command) {
 
 	// check if one byte long
 	if (command >> 8 == 0) {
-		outb(PS2_REGISTER, command);
+		outb(PS2_REGISTER, command & 0xFF);
 		return;
 	}
 
-	outb(PS2_REGISTER, command >> 8);
+	outb(PS2_REGISTER, (command >> 8) & 0xFF);
 	if (!wait_input_buffer()) return;
-	outb(PS2_DATA_PORT, command & 0xF);
+	outb(PS2_DATA_PORT, command & 0xFF);
 }
 
 // returns 1 if successful, 0 if not
@@ -88,11 +100,11 @@ int send_to_second_port(uint8_t data) {
 	return 1;
 }
 
-
-
 void initialise_controller(void) {
-	write_to_controller(DISABLE_FIRST_PORT); // disable first PS/2 port
-	write_to_controller(DISABLE_SECOND_PORT); // disable second PS/2 port
+	terminal_info("Initialising PS/2 controller and ports...\n");
+
+	write_to_controller(DISABLE_FIRST_PORT); // disable first ps/2 port
+	write_to_controller(DISABLE_SECOND_PORT); // disable second ps/2 port
 	read_response(); // flush output buffer
 	
 	// set controller configuration byte
@@ -130,6 +142,8 @@ void initialise_controller(void) {
 	if (test_result != PORT_TEST_SUCCESS) {
 		printf("PS/2 First Port Test Fail!");
 		if (!is_dual_channel) return;
+	} else {
+		printf("PS/2 First Port Test Success!\n");
 	}
 
 	if (is_dual_channel) {
@@ -137,12 +151,14 @@ void initialise_controller(void) {
 		test_result = read_response();
 		if (test_result != PORT_TEST_SUCCESS) {
 			printf("PS/2 Second Port Test Fail!");
+		} else {
+			printf("PS/2 Second Port Test Success!\n");
 		}
 	}
 
-	// enable ports
-	write_to_controller(ENABLE_FIRST_PORT);
-	write_to_controller(ENABLE_SECOND_PORT);
+	// enable ports, seems to cause a GPF at the moment
+	//write_to_controller(ENABLE_FIRST_PORT);
+	//if (is_dual_channel) write_to_controller(ENABLE_SECOND_PORT);
 
 	write_to_controller(READ_CONTROLLER_CONFIG);
 	controller_config = read_response();
@@ -156,24 +172,26 @@ void initialise_controller(void) {
 	if (response != 0xFA && response != 0xAA) {
 		switch (response) {
 			case 0xFF:
-				printf("Timeout when resetting first port PS/2 device! First port not populated.");
+				printf("Timeout when resetting first port PS/2 device! First port not populated.\n");
 				return;
 			case 0xFC:
-				printf("PS/2 first port device self test failed.");
+				printf("PS/2 first port device self test failed.\n");
 				break;
 		}
 	}
 
-	if (is_dual_channel) send_to_second_port(RESET_DEVICE);	
-	response = read_response();
-	if (response != 0xFA && response != 0xAA) {
-		switch (response) {
-			case 0xFF:
-				printf("Timeout when resetting second port PS/2 device! Second port not populated.");
-				return;
-			case 0xFC:
-				printf("PS/2 second port device self test failed.");
-				break;
+	if (is_dual_channel) {
+		send_to_second_port(RESET_DEVICE);
+		response = read_response();
+		if (response != 0xFA && response != 0xAA) {
+			switch (response) {
+				case 0xFF:
+					printf("Timeout when resetting second port PS/2 device! Second port not populated.\n");
+					return;
+				case 0xFC:
+					printf("PS/2 second port device self test failed.\n");
+					break;
+			}
 		}
 	}
 }

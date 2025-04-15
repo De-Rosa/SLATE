@@ -3,6 +3,7 @@
 #include <stdint.h> 
 
 #include <kernel/gdt.h>
+#include <kernel/tty.h>
 
 // https://wiki.osdev.org/GDT_Tutorial#Filling_the_Table
 // *target refers to the logical address of the Segment Descriptor.
@@ -56,6 +57,8 @@ extern void setGDT(uint16_t limit, uint32_t base);
 extern void reloadSegments(void);
 
 void setup_gdt(void) {
+	terminal_info("Initialising GDT...\n");
+
 	encode_segments(gdt);
 
 	uint16_t limit = (sizeof(gdt) - 1);

@@ -14,8 +14,8 @@ void kernel_main(void) {
 	setup_gdt();
 	setup_idt();
 
-	// Causes a general fault protection exception
-	// initialise_controller();
+	// Occasionally causes a general fault protection exception?
+	initialise_controller();
 
 	printf("Welcome to SLATE!\n");
 }

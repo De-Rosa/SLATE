@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <kernel/idt.h>
+#include <kernel/tty.h>
 #include <string.h>
 
 #define PIC1	0x20
@@ -70,6 +71,8 @@ void encode_isrs(uint8_t* idt) {
 }
 
 void setup_idt(void) {
+	terminal_info("Initialising IDT...\n");
+
 	encode_isrs(idt);
 
 	uint16_t limit = (sizeof(idt) - 1);
@@ -107,8 +110,8 @@ const char* exception_descriptions[] = {
 void exception_handler(struct registers* regs) {
 	if (regs->error_code > 32) return;
 
-	printf("Exception handler called!\n");
-	printf(exception_descriptions[regs->error_code]);
+	terminal_error("Exception handler called!\n");
+	terminal_error(exception_descriptions[regs->error_code]);
 
 	__asm__ volatile ("cli; hlt"); // hang the system
 }
