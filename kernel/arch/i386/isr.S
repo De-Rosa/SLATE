@@ -4,6 +4,7 @@
 .macro isr_err_stub n
 .global isr_stub_\n
 isr_stub_\n:
+    cli
     pushl $\n
     call isr_common_stub
     iret
@@ -12,6 +13,7 @@ isr_stub_\n:
 .macro isr_no_err_stub n
 .global isr_stub_\n
 isr_stub_\n:
+    cli
     pushl $\n
     pushl $0
     call isr_common_stub

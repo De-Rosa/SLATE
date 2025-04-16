@@ -62,6 +62,7 @@ void setup_pics(void) {
 uint8_t idt[8 * 256];
 extern void setIDT(uint16_t limit, uint32_t base);
 extern void* isr_table[];
+extern void* irq_table[];
 
 void encode_isrs(uint8_t* idt) {
 	for (int i = 0; i < 32; i++) {
@@ -70,16 +71,24 @@ void encode_isrs(uint8_t* idt) {
 	}
 }
 
+void encode_irqs(uint8_t* idt) {
+	for (int i = 32; i < 48; i++) {
+		struct idt_entry source = {.offset = (uint32_t) irq_table[i], .selector = 0x08, .attributes = 0x8E};
+		encode_idt_entry(&idt[i * 8], source);
+	}
+}
+
 void setup_idt(void) {
 	terminal_info("Initialising IDT...\n");
 
+	setup_pics();
 	encode_isrs(idt);
+	encode_irqs(idt);
 
 	uint16_t limit = (sizeof(idt) - 1);
 	uint32_t base = (uint32_t)&idt;
 
 	setIDT(limit, base);
-	setup_pics();
 
 }
 
@@ -114,4 +123,34 @@ void exception_handler(struct registers* regs) {
 	terminal_error(exception_descriptions[regs->error_code]);
 
 	__asm__ volatile ("cli; hlt"); // hang the system
+}
+
+void* irq_routines[16] = {
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0
+};
+
+void install_irq_handler(int irq, void (*handler)(struct registers* reg)) {
+	if (irq > 15) return;
+	irq_routines[irq] = handler;
+}
+
+void uninstall_irq_handler(int irq) {
+	if (irq > 15) return;
+	irq_routines[irq] = 0;
+}
+
+void irq_handler(struct registers* regs) {
+	printf("Handler called.");
+	void (*handler)(struct registers* regs);
+	handler = irq_routines[regs->error_code - 32];
+	if (handler) handler(regs);
+
+	// if greater than 40, send EOI to PIC2
+	if (regs->error_code >= 40) {
+		outb(PIC2, PIC1);
+	}
+
+	// send EOI to PIC1
+	outb(PIC1, PIC1);
 }

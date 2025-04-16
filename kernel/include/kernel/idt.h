@@ -33,7 +33,8 @@ struct registers {
 
 }__attribute__((packed));
 
-
+void install_irq_handler(int irq, void (*handler)(struct registers* reg));
+void uninstall_irq_handler(int irq);
 void setup_idt(void);
 
 #endif
