@@ -47,3 +47,15 @@ void free_page(void* address){
         clear_bit(index);
     }
 };
+
+// REPORTING
+
+int get_pmem_usage(){
+    int used = 0;
+    for (uint32_t i = 0; i < total_pages; i++){     // find used pages
+        if (is_bit_set(i)){
+            used++;
+        }
+    }
+    return used;
+}
