@@ -8,17 +8,16 @@
 #include <kernel/memory/pmem.h>
 #include <kernel/memory/vmem.h>
 
+#include <kernel/interrupt/irqs.h>
+
 void kernel_main(void) {
 	terminal_initialize();
 
 	setup_gdt();
 	setup_idt();
 
-	// Occasionally causes a general fault protection exception?
 	initialise_controller();
+	install_irqs();
 
-	// test interrupts!
-	volatile int z = 1 / 0;
-
-	printf("Welcome to SLATE!\n");
+	printf("\nWelcome to SLATE!\n");
 }
