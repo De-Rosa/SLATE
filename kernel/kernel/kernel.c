@@ -2,13 +2,13 @@
 
 #include <kernel/tty.h>
 #include <kernel/gdt.h>
-#include <kernel/idt.h>
-#include <kernel/ps2.h>
 
 #include <kernel/memory/pmem.h>
 #include <kernel/memory/vmem.h>
 
+#include <kernel/interrupt/idt.h>
 #include <kernel/interrupt/irqs.h>
+#include <kernel/interrupt/keyboard/ps2.h>
 
 void kernel_main(void) {
 	terminal_initialize();
@@ -16,8 +16,13 @@ void kernel_main(void) {
 	setup_gdt();
 	setup_idt();
 
-	initialise_controller();
 	install_irqs();
+	initialise_controller();
 
-	printf("\nWelcome to SLATE!\n");
+	printf("\nWelcome to SLATE! Keyboard test.\n");
+
+	// Keep running, interrupts will override this.
+	for(;;) {
+		asm("hlt");
+	}
 }

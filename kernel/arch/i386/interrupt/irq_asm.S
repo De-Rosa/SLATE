@@ -1,47 +1,45 @@
 # https://wiki.osdev.org/Interrupts_Tutorial
 # http://www.osdever.net/bkerndev/Docs/irqs.htm
 
+.intel_syntax noprefix
+
 .macro irq_stub n, k
 .global irq_stub_\n
 irq_stub_\n:
-    cli
-    pushl 0
-    pushl $\k
-    call irq_common_stub
-    iret
+    push 0
+    push \k
+    jmp irq_common_stub
 .endm
 
 .extern irq_handler
-
 .global irq_common_stub
 irq_common_stub:
     pusha
-    pushl %ds
-    pushl %es
-    pushl %fs
-    pushl %gs
 
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
+    push ds
+    push es
+    push fs
+    push gs
 
-    movl %esp, %eax
-    pushl %eax
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp
+
+    push eax
 
     call irq_handler
 
-    popl %eax
-    popl %gs
-    popl %fs
-    popl %es
-    popl %ds
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
     popa
 
-    sti
-
-    addl $8, %esp
+    add esp, 8
     iret
 
 // https://wiki.osdev.org/Interrupts#General_IBM-PC_Compatible_Interrupt_Information
@@ -61,7 +59,6 @@ irq_stub 12, 44 // PS2 Mouse
 irq_stub 13, 45 // FPU / Coprocessor / Inter-processor
 irq_stub 14, 46 // Primary ATA Hard Disk
 irq_stub 15, 47 // Secondary ATA Hard Disk
-
 
 .global irq_table
 irq_table:

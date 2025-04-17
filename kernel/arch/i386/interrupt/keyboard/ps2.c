@@ -3,7 +3,7 @@
 #include <stdint.h> 
 #include <stdio.h> 
 
-#include <kernel/ps2.h>
+#include <kernel/interrupt/keyboard/ps2.h>
 #include <kernel/tty.h>
 
 // Too large of a wait time causes a general protection fault
@@ -193,9 +193,12 @@ void initialise_controller(void) {
 	}
 
 	// enable IRQs
-	/*write_to_controller(READ_CONTROLLER_CONFIG);
+	write_to_controller(READ_CONTROLLER_CONFIG);
 	controller_config = read_response();
-	controller_config |= 1; // set bit 0
+	controller_config |= 0x01; // set bit 0
 	controller_config |= is_dual_channel << 1;
-	write_to_controller_double(WRITE_CONTROLLER_CONFIG, controller_config);*/
+	write_to_controller_double(WRITE_CONTROLLER_CONFIG, controller_config);
+
+	// Enable IRQ1 (keyboard)
+	write_to_controller_double(0xAE, 0xF4);
 }

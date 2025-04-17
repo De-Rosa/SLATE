@@ -29,4 +29,3 @@ inb:
    mov dx, [esp + 4] // load port into dx
    in al, dx
    ret
-
