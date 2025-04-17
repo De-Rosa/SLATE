@@ -25,8 +25,6 @@ const char* exception_descriptions[] = {
     "Machine Check Exception"
 };
 
-// Seems to be incorrect, isr number (which should be used) is jumbled.
-// Using error code for now.
 void exception_handler(struct registers* regs) {
 	if (regs->int_no > 32) return;
 

@@ -99,6 +99,11 @@ int send_to_second_port(uint8_t data) {
 	return 1;
 }
 
+void unmask_keyboard(void) {
+	outb(0x21,0xFD);
+	outb(0xA1,0xFF);
+}
+
 void initialise_controller(void) {
 	terminal_info("Initialising PS/2 controller and ports...\n");
 
@@ -199,6 +204,6 @@ void initialise_controller(void) {
 	controller_config |= is_dual_channel << 1;
 	write_to_controller_double(WRITE_CONTROLLER_CONFIG, controller_config);
 
-	// Enable IRQ1 (keyboard)
-	write_to_controller_double(0xAE, 0xF4);
+	// enable IRQ1 (keyboard)
+	unmask_keyboard();
 }

@@ -12,9 +12,6 @@ void keyboard_irq(struct registers* regs) {
 }
 
 void install_irqs(void) {
-	// enable keyboard
-	outb(0x21,0xFD);
-	outb(0xA1,0xFF);
 	install_irq_handler(1, keyboard_irq);
 }
 
