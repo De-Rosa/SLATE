@@ -48,6 +48,41 @@ struct gdt_entry {
 	uint8_t flags; // 4 bit
 }__attribute__((packed));
 
+// each is 4 bytes (32 bits) offset from each other
+struct tss {
+	// segment selector for the TSS of the previous task
+	uint32_t link;
+
+	// stack pointers/segment selectors to load the stack when going from a lower priviledge to a higher one
+	uint32_t esp0, ss0, esp1, ss1, esp2, ss2;
+
+	// control register 3, physical address of current page directory
+	uint32_t cr3;
+
+	// extended instruction pointer, stores address of next instruction
+	uint32_t eip;
+
+	// status flags
+	uint32_t eflags;
+
+	// general purpose registers
+	uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
+
+	// segment registers
+	uint32_t es, cs, ss, ds, fs, gs;
+
+	// LDT register
+	uint32_t ldtr;
+
+	// I/O map base field
+	uint32_t iopb;
+
+	// shadow stack pointer
+	uint32_t ssp;
+
+
+}__attribute__((packed));
+
 void setup_gdt(void);
 
 #endif
