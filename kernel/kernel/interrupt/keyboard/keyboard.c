@@ -15,6 +15,7 @@ char* scan_code_to_key(uint8_t byte) {
 	switch (byte) {
 		case (0x0E):
 			return capitalised ? "~" : "`";
+		// Left shift
 		case (0x12):
 			capitalised = !capitalised;
 			return "";
@@ -106,9 +107,11 @@ char* scan_code_to_key(uint8_t byte) {
 			return capitalised ? "\"" : "'";
 		case (0x54):
 			return capitalised ? "{" : "[";
+		// Caps lock
 		case (0x58):
 			capitalised = !capitalised;
 			return "";
+		// Right shift
 		case (0x59):
 			capitalised = !capitalised;
 			return "";
@@ -125,9 +128,11 @@ char* scan_code_to_key(uint8_t byte) {
 
 void modifier_release(uint8_t byte) {
 	switch (byte) {
+		// Left shift
 		case (0x12):
 			capitalised = !capitalised;
 			return;
+		// Right shift
 		case (0x59):
 			capitalised = !capitalised;
 			return;
