@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "kernel/task-scheduling/tcb.h"
+#include "kernel/taskscheduling/tcb.h"
 
 uint32_t next_pid = 1;
 
