@@ -8,3 +8,9 @@ repos:
         args: ['--unsafe']
       - id: no-commit-to-branch
         args: ['--branch', 'main']
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: cpplint
+        args: [--extensions=c,h]
