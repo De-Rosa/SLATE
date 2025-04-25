@@ -12,5 +12,5 @@ repos:
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
-      - id: cpplint
-        args: [--extensions=c,h]
+    - id: clang-format
+      args: [--style=file, -i]
