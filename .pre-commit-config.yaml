@@ -14,3 +14,4 @@ repos:
     hooks:
     - id: clang-format
       args: [--style=file, -i]
+      additional_dependencies: [clang-format==20.1.0]
