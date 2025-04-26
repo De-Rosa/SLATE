@@ -1,9 +1,17 @@
 // https://wiki.osdev.org/GDT_Tutorial
 // https://wiki.osdev.org/Global_Descriptor_Table 
 #include <stdint.h> 
+#include <string.h>
 
 #include <kernel/gdt.h>
 #include <kernel/tty.h>
+
+uint8_t gdt[8 * 6]; 
+extern uint32_t kernel_stack_ptr;
+struct tss tss;
+extern void setGDT(uint16_t limit, uint32_t base);
+extern void setTSS();
+extern void reloadSegments(void);
 
 // https://wiki.osdev.org/GDT_Tutorial#Filling_the_Table
 // *target refers to the logical address of the Segment Descriptor.
@@ -36,35 +44,43 @@ void encode_gdt_entry(uint8_t *target, struct gdt_entry source) {
 }
 
 void encode_segments(uint8_t *entries) {
+	uint32_t tss_base = (uint32_t) &tss;
+	uint32_t tss_limit = (uint32_t) sizeof(tss) - 1;
+
 	// Templates for each segment descriptor
 	// 32 bit
-	struct gdt_entry segment_templates[5] = {
+	struct gdt_entry segment_templates[6] = {
 		{ .base = 0, .limit = 0x00000000, .access_byte = 0x00, .flags = 0x0 }, // Null Descriptor
 		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0x9A, .flags = 0xC }, // Kernel Mode Code Segment
 		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0x92, .flags = 0xC }, // Kernel Mode Data Segment
 		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0xFA, .flags = 0xC }, // User Mode Code Segment
-		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0xF2, .flags = 0xC } // User Mode Data Segment
+		{ .base = 0, .limit = 0xFFFFF, .access_byte = 0xF2, .flags = 0xC }, // User Mode Data Segment
+		{ .base = tss_base, .limit = tss_limit, .access_byte = 0x89, .flags = 0x0 } // TSS
 	};
 
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 6; i++) {
 		// each item in the array is one byte, each segment has offset of 8 bytes
 		encode_gdt_entry(&entries[i * 8], segment_templates[i]);
 	}
 }
 
-uint8_t gdt[8 * 5]; 
-extern void setGDT(uint16_t limit, uint32_t base);
-extern void reloadSegments(void);
+void setup_tss(void) {
+	tss.ss0 = 0x10;
+	tss.esp0 = (uint32_t) kernel_stack_ptr;
+	tss.iopb = sizeof(tss);
+}
 
 void setup_gdt(void) {
 	terminal_info("Initialising GDT...\n");
 
+	setup_tss();
 	encode_segments(gdt);
 
 	uint16_t limit = (sizeof(gdt) - 1);
 	uint32_t base = (uint32_t)&gdt;
 
 	setGDT(limit, base);
+	setTSS();
 	reloadSegments();
 }
 

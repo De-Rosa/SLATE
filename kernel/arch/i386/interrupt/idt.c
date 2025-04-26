@@ -3,7 +3,7 @@
 #include <stdint.h> 
 
 #include <stdio.h>
-#include <kernel/idt.h>
+#include <kernel/interrupt/idt.h>
 #include <kernel/tty.h>
 #include <string.h>
 
@@ -14,6 +14,13 @@
 
 #define PIC_INIT 0x11
 #define MODE_8086 0x01
+#define PIC_EOI	0x20
+
+uint8_t idt[8 * 256];
+extern void setIDT(uint16_t limit, uint32_t base);
+extern void* isr_table[];
+extern void* irq_table[];
+extern void outb(uint16_t port, uint8_t operand);
 
 void encode_idt_entry(uint8_t *target, struct idt_entry source) {
 	// Offset, 32 bits
@@ -32,8 +39,6 @@ void encode_idt_entry(uint8_t *target, struct idt_entry source) {
 	// Attributes (P, DPL, 0, Gate Type)
 	target[5] = source.attributes;
 }
-
-extern void outb(uint16_t port, uint8_t operand);
 
 void setup_pics(void) {
 	// initialise command for PICs (0x11)
@@ -59,10 +64,6 @@ void setup_pics(void) {
 	outb(PIC2_DATA, 0x00);
 }
 
-uint8_t idt[8 * 256];
-extern void setIDT(uint16_t limit, uint32_t base);
-extern void* isr_table[];
-
 void encode_isrs(uint8_t* idt) {
 	for (int i = 0; i < 32; i++) {
 		struct idt_entry source = {.offset = (uint32_t) isr_table[i], .selector = 0x08, .attributes = 0x8E};
@@ -70,48 +71,23 @@ void encode_isrs(uint8_t* idt) {
 	}
 }
 
+void encode_irqs(uint8_t* idt) {
+	for (int i = 0; i < 16; i++) {
+		struct idt_entry source = {.offset = (uint32_t) irq_table[i], .selector = 0x08, .attributes = 0x8E};
+		encode_idt_entry(&idt[(i + 32) * 8], source);
+	}
+}
+
 void setup_idt(void) {
 	terminal_info("Initialising IDT...\n");
 
+	setup_pics();
+
 	encode_isrs(idt);
+	encode_irqs(idt);
 
 	uint16_t limit = (sizeof(idt) - 1);
 	uint32_t base = (uint32_t)&idt;
 
 	setIDT(limit, base);
-	setup_pics();
-
-}
-
-const char* exception_descriptions[] = {
-    "Division By Zero Exception",
-    "Debug Exception",
-    "Non Maskable Interrupt Exception",
-    "Breakpoint Exception",
-    "Into Detected Overflow Exception",
-    "Out of Bounds Exception",
-    "Invalid Opcode Exception",
-    "No Coprocessor Exception",
-    "Double Fault Exception",
-    "Coprocessor Segment Overrun Exception",
-    "Bad TSS Exception",
-    "Segment Not Present Exception",
-    "Stack Fault Exception",
-    "General Protection Fault Exception",
-    "Page Fault Exception",
-    "Unknown Interrupt Exception",
-    "Coprocessor Fault Exception",
-    "Alignment Check Exception",
-    "Machine Check Exception"
-};
-
-// Seems to be incorrect, isr number (which should be used) is jumbled.
-// Using error code for now.
-void exception_handler(struct registers* regs) {
-	if (regs->error_code > 32) return;
-
-	terminal_error("Exception handler called!\n");
-	terminal_error(exception_descriptions[regs->error_code]);
-
-	__asm__ volatile ("cli; hlt"); // hang the system
 }

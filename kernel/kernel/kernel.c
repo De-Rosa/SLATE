@@ -2,11 +2,13 @@
 
 #include <kernel/tty.h>
 #include <kernel/gdt.h>
-#include <kernel/idt.h>
-#include <kernel/ps2.h>
 
 #include <kernel/memory/pmem.h>
 #include <kernel/memory/vmem.h>
+
+#include <kernel/interrupt/idt.h>
+#include <kernel/interrupt/irqs.h>
+#include <kernel/interrupt/keyboard/ps2.h>
 
 void kernel_main(void) {
 	terminal_initialize();
@@ -14,11 +16,13 @@ void kernel_main(void) {
 	setup_gdt();
 	setup_idt();
 
-	// Occasionally causes a general fault protection exception?
+	install_irqs();
 	initialise_controller();
 
-	// test interrupts!
-	volatile int z = 1 / 0;
+	printf("\nWelcome to SLATE! Keyboard test.\n");
 
-	printf("Welcome to SLATE!\n");
+	// Keep running, interrupts will override this.
+	for(;;) {
+		asm("hlt");
+	}
 }

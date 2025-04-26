@@ -1,54 +1,58 @@
 # https://wiki.osdev.org/Interrupts_Tutorial
 # http://www.osdever.net/bkerndev/Docs/isrs.htm
 
+.intel_syntax noprefix
+
 .macro isr_err_stub n
 .global isr_stub_\n
 isr_stub_\n:
-    pushl $\n
-    call isr_common_stub
+    cli
+    push \n
+    jmp isr_common_stub
+    sti
     iret
 .endm
 
 .macro isr_no_err_stub n
 .global isr_stub_\n
 isr_stub_\n:
-    pushl $\n
-    pushl $0
-    call isr_common_stub
+    cli
+    push 0
+    push \n
+    jmp isr_common_stub
+    sti
     iret
 .endm
 
 .extern exception_handler
-
 .global isr_common_stub
 isr_common_stub:
     pusha
-    pushl %ds
-    pushl %es
-    pushl %fs
-    pushl %gs
 
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
+    push ds
+    push es
+    push fs
+    push gs
 
-    movl %esp, %eax
-    pushl %eax
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp
+
+    push eax
 
     call exception_handler
 
-    popl %eax
-    popl %gs
-    popl %fs
-    popl %es
-    popl %ds
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
     popa
 
-    sti
-    
-    addl $8, %esp
+    add esp, 8
     iret
 
 isr_no_err_stub 0   // Division by zero exception

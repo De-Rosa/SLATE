@@ -17,22 +17,13 @@ struct idt_entry {
 
 }__attribute__((packed));
 
-// TODO: fix this
 struct registers {
-	// pushed last seperately
-	unsigned int ds, es, fs, gs; 
-
-	// pushed by pusha
-	unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; 
-	
-	// pushed using 'push byte'
-	unsigned int isr_number, error_code;
-
-	// pushed automatically
-	unsigned int eip, cs, eflags;
+	unsigned int gs, fs, es, ds;
+	unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	unsigned int int_no, error_code;
+	unsigned int eip, cs, eflags, useresp, ss;
 
 }__attribute__((packed));
-
 
 void setup_idt(void);
 

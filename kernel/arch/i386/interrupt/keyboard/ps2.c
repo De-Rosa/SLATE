@@ -3,7 +3,7 @@
 #include <stdint.h> 
 #include <stdio.h> 
 
-#include <kernel/ps2.h>
+#include <kernel/interrupt/keyboard/ps2.h>
 #include <kernel/tty.h>
 
 // Too large of a wait time causes a general protection fault
@@ -70,18 +70,17 @@ uint8_t read_response(void) {
 	return result;
 }
 
-void write_to_controller(uint16_t command) {
+void write_to_controller(uint8_t command) {
 	if (!wait_input_buffer()) return;
+	outb(PS2_REGISTER, command & 0xFF);
+}
 
-	// check if one byte long
-	if (command >> 8 == 0) {
-		outb(PS2_REGISTER, command & 0xFF);
-		return;
-	}
-
-	outb(PS2_REGISTER, (command >> 8) & 0xFF);
+void write_to_controller_double(uint8_t first, uint8_t next) {
 	if (!wait_input_buffer()) return;
-	outb(PS2_DATA_PORT, command & 0xFF);
+	outb(PS2_REGISTER, first & 0xFF);
+
+	if (!wait_input_buffer()) return;
+	outb(PS2_DATA_PORT, next & 0xFF);
 }
 
 // returns 1 if successful, 0 if not
@@ -100,18 +99,22 @@ int send_to_second_port(uint8_t data) {
 	return 1;
 }
 
+void unmask_keyboard(void) {
+	outb(0x21,0xFD);
+	outb(0xA1,0xFF);
+}
+
 void initialise_controller(void) {
 	terminal_info("Initialising PS/2 controller and ports...\n");
 
 	write_to_controller(DISABLE_FIRST_PORT); // disable first ps/2 port
 	write_to_controller(DISABLE_SECOND_PORT); // disable second ps/2 port
-	read_response(); // flush output buffer
 	
 	// set controller configuration byte
 	write_to_controller(READ_CONTROLLER_CONFIG);
 	uint8_t controller_config = read_response();
 	controller_config &= 0b10101110; // clear bits 0, 4, and 6
-	write_to_controller(WRITE_CONTROLLER_CONFIG & controller_config);
+	write_to_controller_double(WRITE_CONTROLLER_CONFIG, controller_config);
 
 	// perform test 
 	write_to_controller(TEST_CONTROLLER);
@@ -129,13 +132,16 @@ void initialise_controller(void) {
 
 	// is a dual channel device
 	if ((controller_config & 0b00100000) != 0b00100000) {
+		printf("PS/2 is dual channel.\n");
 		is_dual_channel = 1;
 
 		write_to_controller(DISABLE_SECOND_PORT);
 		controller_config &= 0b11011101; // clear bits 1 and 5
-		write_to_controller(WRITE_CONTROLLER_CONFIG & controller_config);
+		write_to_controller_double(WRITE_CONTROLLER_CONFIG, controller_config);
+	} else {
+		printf("PS/2 is not dual channel.\n");
 	}
-
+	
 	// test ports 
 	write_to_controller(TEST_FIRST_PORT);
 	uint8_t test_result = read_response();
@@ -156,15 +162,9 @@ void initialise_controller(void) {
 		}
 	}
 
-	// enable ports, seems to cause a GPF at the moment
-	//write_to_controller(ENABLE_FIRST_PORT);
-	//if (is_dual_channel) write_to_controller(ENABLE_SECOND_PORT);
-
-	write_to_controller(READ_CONTROLLER_CONFIG);
-	controller_config = read_response();
-	controller_config |= 1; // set bit 0
-	controller_config |= is_dual_channel << 1;
-	write_to_controller(WRITE_CONTROLLER_CONFIG & controller_config);
+	// enable ports
+	write_to_controller(ENABLE_FIRST_PORT);
+	if (is_dual_channel) write_to_controller(ENABLE_SECOND_PORT);
 
 	// reset devices
 	send_to_first_port(RESET_DEVICE);
@@ -178,6 +178,7 @@ void initialise_controller(void) {
 				printf("PS/2 first port device self test failed.\n");
 				break;
 		}
+		response = read_response();
 	}
 
 	if (is_dual_channel) {
@@ -193,5 +194,16 @@ void initialise_controller(void) {
 					break;
 			}
 		}
+		response = read_response();
 	}
+
+	// enable IRQs
+	write_to_controller(READ_CONTROLLER_CONFIG);
+	controller_config = read_response();
+	controller_config |= 0x01; // set bit 0
+	controller_config |= is_dual_channel << 1;
+	write_to_controller_double(WRITE_CONTROLLER_CONFIG, controller_config);
+
+	// enable IRQ1 (keyboard)
+	unmask_keyboard();
 }

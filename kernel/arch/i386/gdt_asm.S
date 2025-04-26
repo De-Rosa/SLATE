@@ -7,21 +7,27 @@ gdtr:
 .section .text
 .global setGDT
 setGDT:
-   MOV   ax, [esp + 4] // get limit 16 bits
-   MOV   [gdtr], ax // put it in GDTR
-   MOV   eax, [esp + 8] // get base 32 bits
-   MOV   [gdtr + 2], eax // put it in GDTR
-   LGDT  [gdtr] // load the GDT
-   RET
+   mov   ax, [esp + 4] // get limit 16 bits
+   mov   [gdtr], ax // put it in GDTR
+   mov   eax, [esp + 8] // get base 32 bits
+   mov   [gdtr + 2], eax // put it in GDTR
+   lgdt  [gdtr] // load the GDT
+   ret
+
+.global setTSS
+setTSS:
+   mov   ax, 0x28
+   ltr   ax
+   ret
 
 .global reloadSegments
 reloadSegments:
-   JMP   0x08:.reload_CS 
+   jmp   0x08:.reload_CS 
 .reload_CS:
-   MOV   ax, 0x10 
-   MOV   ds, ax
-   MOV   es, ax
-   MOV   fs, ax
-   MOV   gs, ax
-   MOV   ss, ax
-   RET
+   mov   ax, 0x10 
+   mov   ds, ax
+   mov   es, ax
+   mov   fs, ax
+   mov   gs, ax
+   mov   ss, ax
+   ret
