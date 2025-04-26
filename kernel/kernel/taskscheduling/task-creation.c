@@ -1,12 +1,12 @@
 #include <stdint.h>
 #include "kernel/taskscheduling/tcb.h"
 
-uint32_t next_pid = 1;
+uint64_t next_pid = 1;
 
-extern uint32_t current_cr3;
+extern uint64_t current_cr3;
 // assuming single address space is being used
 // remove this function once different page directories have been introduced
-uint32_t clone_page_directory(uint32_t cr3) {
+uint64_t clone_page_directory(uint64_t cr3) {
     return cr3;
 }
 
@@ -22,9 +22,9 @@ void init_scheduler() {
     tcb *current_task_TCB = (tcb *)kmalloc(sizeof(tcb));
 
     uint8_t *stack = (uint8_t *)kmalloc(KERNEL_STACK_SIZE);
-    uint32_t stack_top = (uint32_t)(stack + KERNEL_STACK_SIZE);
+    uint64_t stack_top = (uint64_t)(stack + KERNEL_STACK_SIZE);
 
-    current_task_TCB->esp = (uint32_t *)stack_top;
+    current_task_TCB->esp = (uint64_t *)stack_top;
     current_task_TCB->cr3 = current_cr3;
     current_task_TCB->esp0 = stack_top;
     current_task_TCB->pid = 0;
@@ -36,21 +36,25 @@ tcb *create_task(void (*entry_point)(void)) {
     tcb *new_tcb = (tcb *)kmalloc(sizeof(tcb));
 
     uint8_t *stack = (uint8_t *)kmalloc(KERNEL_STACK_SIZE);
-    uint32_t stack_top = (uint32_t)(stack + KERNEL_STACK_SIZE);
+    uint64_t stack_top = (uint64_t)(stack + KERNEL_STACK_SIZE);
 
-    uint32_t *esp = (uint32_t *)stack_top;
+    uint64_t *esp = (uint64_t *)stack_top;
 
-    *(--esp) = (uint32_t)entry_point;  // EIP
-    *(--esp) = 0;  // EBP
-    *(--esp) = 0;  // EDI
-    *(--esp) = 0;  // ESI
-    *(--esp) = 0;  // EBX
+    *(--esp) = (uint64_t)entry_point;  // Fake return address (RIP)
+    *(--esp) = 0;  // RBP
+    *(--esp) = 0;  // RDI
+    *(--esp) = 0;  // RSI
+    *(--esp) = 0;  // RBX
+    *(--esp) = 0;  // R12
+    *(--esp) = 0;  // R13
+    *(--esp) = 0;  // R14
+    *(--esp) = 0;  // R15
 
     // if we want to also push EAX, ECX, or EDX, I can add them later
 
     new_tcb->esp = esp;
 
-    new_tcb->cr3 = (uint32_t)clone_page_directory(current_cr3);  // or same CR3 if shared space
+    new_tcb->cr3 = (uint64_t)clone_page_directory(current_cr3);
     new_tcb->esp0 = stack_top;
 
     new_tcb->pid = next_pid++;
@@ -59,3 +63,7 @@ tcb *create_task(void (*entry_point)(void)) {
 
     return new_tcb;
 }
+
+// create the head and tail of the ready queue which point to NULL (0)
+tcb *ready_queue_head = 0;
+tcb *ready_queue_tail = 0;
