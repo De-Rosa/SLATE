@@ -12,9 +12,9 @@ typedef enum {
 } task_state;
 
 typedef struct thread_control_block {
-    uint32_t *esp;
-    uint32_t cr3;
-    uint32_t esp0;
+    uint64_t *esp;
+    uint64_t cr3;
+    uint64_t esp0;
     uint32_t pid;
     char *name;
     uint8_t state;
