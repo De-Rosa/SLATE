@@ -61,7 +61,7 @@ For Binutils and GCC, replace the x.y.z with the version you downloaded (omittin
 \
 To compile Binutils:
 ```
-cd $HOME/src 
+cd $HOME/src
 mkdir build-binutils
 cd build-binutils
 ../binutils-$BINUTILS_VER/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
@@ -74,7 +74,7 @@ We can verify that the `$PREFIX/bin` directory is in the PATH using\
 `which -- $TARGET-as || echo $TARGET-as is not in the PATH`.
 
 ```
-cd $HOME/src 
+cd $HOME/src
 mkdir build-gcc
 cd build-gcc
 ../gcc-$GCC_VER/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers --disable-hosted-libstdcxx
@@ -100,13 +100,22 @@ Our compiler can now be ran by invoking `$TARGET-gcc`!
 
 ## Building and Running (Manual)
 ```
-./clean.sh 
-./headers.sh 
-./iso.sh 
+./clean.sh
+./headers.sh
+./iso.sh
 ./qemu.sh
 ```
 You may need to make the shell scripts executable. On unix-like operating systems:\
 `chmod +x build.sh clean.sh config.sh default-host.sh headers.sh iso.sh qemu.sh target-triplet-to-arch.sh`
 
+## Development
+It's recommended to use pre-commit. Simply run:
+```
+pip install pre-commit
+pre-commit install
+```
+Pre-commit will run automatically whenever you make a commit, checking your code and let you know if anything needs fixing, and will format C code correctly, before the commit is finalised.
+You may also run it manually with:
+`pre-commit`
 ## Sources Used
 https://wiki.osdev.org
