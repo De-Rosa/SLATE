@@ -1,0 +1,20 @@
+# https://docs.github.com/en/actions/writing-workflows/quickstart
+name: Check SLATE Push
+run-name: ${{ github.actor }} is commiting to ${{ github.ref }} on ${{ github.repository }} 🚀
+on: [push]
+jobs:
+  Check-Push:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }}, and is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Check Precommit validity
+        run: |
+            pip install pre-commit
+            pre-commit install
+            pre-commit
+      - if: ${{ job.status == 'success' }}
+        run: echo "🎉 The job was successful!"
+      - if: ${{ job.status == 'failure' }}
+        run: echo "❌ The job failed! Please check the logs for more details and use pre-commit next time."
