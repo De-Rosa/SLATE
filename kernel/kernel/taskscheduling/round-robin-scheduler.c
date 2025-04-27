@@ -1,10 +1,6 @@
 #include "kernel/taskscheduling/tcb.h"
 
-// create the head and tail of the ready queue which point to NULL (0)
-tcb *ready_queue_head = 0;
-tcb *ready_queue_tail = 0;
-
-void round_robin(tcb *current_task_TCB) {
+void round_robin(tcb *current_task_TCB, tcb *ready_queue_head) {
     // when there is no current task, there is no need to switch tasks
     if (!current_task_TCB) {
         return;
