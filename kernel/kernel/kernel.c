@@ -5,6 +5,7 @@
 
 #include <kernel/memory/pmem.h>
 #include <kernel/memory/vmem.h>
+#include <multiboot.h>
 
 #include <kernel/interrupt/idt.h>
 #include <kernel/interrupt/irqs.h>
