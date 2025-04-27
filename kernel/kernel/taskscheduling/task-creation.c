@@ -63,7 +63,3 @@ tcb *create_task(void (*entry_point)(void)) {
 
     return new_tcb;
 }
-
-// create the head and tail of the ready queue which point to NULL (0)
-tcb *ready_queue_head = 0;
-tcb *ready_queue_tail = 0;
