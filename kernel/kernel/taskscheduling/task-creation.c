@@ -63,3 +63,21 @@ tcb *create_task(void (*entry_point)(void)) {
 
     return new_tcb;
 }
+
+
+
+void ready_queue_insert(tcb *new_task, tcb *ready_queue_head) {
+    if (!new_task) return;
+
+    new_task->next = 0;
+
+    if (!ready_queue_head) {
+        ready_queue_head = new_task;
+    } else {
+        tcb *current = ready_queue_head;
+        while (current->next) {
+            current = current->next;
+        }
+        current->next = new_task;
+    }
+}
